@@ -63,11 +63,9 @@ Cnsiderations that must be understood include:
 - seawater reaction
 - seabed reaction and anchoring requirement
 
-## 2 Mathematical Model
+## 2. Mathematical Model
 
 ### 2.1 Building the Fluid Model
-
-Core equations to be used in the simulator:
 
 | Equation | Use |
 | --- | --- |
@@ -86,3 +84,43 @@ Core equations to be used in the simulator:
 | $\dfrac{dT_g}{dt}=\dfrac{hA(T_{\rm sea}-T_g)+p_gQ}{m_gc_v}$ | Transient gas-temperature model |
 | $T_{g,n+1}=T_{g,n}+\dfrac{\Delta t}{m_gc_v}\left[hA(T_{\rm sea}-T_{g,n})+p_{g,n}Q_n\right]$ | Explicit-Euler temperature update |
 | $p_{g,n+1}=\dfrac{m_gRT_{g,n+1}}{V_{g,n+1}}$ | Recalculate pressure after timestep |
+
+## 2.2 Wind, Control, Capacity & Performance
+
+| Equation | Use |
+| --- | --- |
+| $P_{\rm wind}=f_{\rm turbine}(v_{\rm wind})$ | Convert wind-speed time series using turbine power curve |
+| $P_{{\rm target},n}=\dfrac{1}{N}\sum_{k=0}^{N-1}P_{{\rm wind},n-k}$ | Rolling-average smoothing target |
+| $P_{\rm mismatch}=P_{\rm wind}-P_{\rm target}$ | Decide charge/discharge request |
+| $P_{\rm surplus}=\max(P_{\rm mismatch},0)$ | Available charging power |
+| $P_{\rm deficit}=\max(-P_{\rm mismatch},0)$ | Required discharge power |
+| $P_{\rm charge}=\min(P_{\rm surplus},P_{\rm charge,max})$ | Apply pump power limit |
+| $P_{\rm discharge}=\min(P_{\rm deficit},P_{\rm discharge,max})$ | Apply turbine/generator power limit |
+| $p_{\min}\le p_g\le p_{\max}$ | PCS operating-pressure constraint |
+| $V_{g,\min}\le V_g\le V_{g,\max}$ | PCS operating-volume constraint |
+| $SOC=\dfrac{V_{g,\max}-V_g}{V_{g,\max}-V_{g,\min}}$ | Volume-based state of charge |
+| $Q_{\rm ch}=\dfrac{\eta_{\rm pump}P_{\rm charge}}{\Delta p}$ | Charging flow rate |
+| $Q_{\rm dis}=-\dfrac{P_{\rm discharge}}{\eta_{\rm turb}\eta_{\rm gen}\Delta p}$ | Discharging flow rate |
+| $P_{\rm grid}=P_{\rm wind}-P_{\rm charge}+P_{\rm discharge}$ | Actual smoothed output power |
+| $\Delta E_n=P_n\Delta t$ | Energy transferred during one timestep |
+| $P_{\rm curtailed}=\max(P_{\rm surplus}-P_{\rm charge},0)$ | Wind power that cannot be stored |
+| $E_{\rm curtailed}=\sum_n P_{{\rm curtailed},n}\Delta t$ | Total curtailed wind energy |
+| $P_{\rm shortfall}=\max(P_{\rm deficit}-P_{\rm discharge},0)$ | Target power storage cannot supply |
+| $E_{\rm shortfall}=\sum_n P_{{\rm shortfall},n}\Delta t$ | Total unmet target energy |
+| $RMSE=\sqrt{\dfrac{1}{N}\sum_{n=1}^{N}(P_{{\rm grid},n}-P_{{\rm target},n})^2}$ | Quantify smoothing performance |
+
+## 3. Software Architecture & Testing
+
+Tests to be run:  
+- Initial ideal-gas state reproduces pre-charge pressure  
+- $Q=0, T_g=T_{sea}$ leaves state unchanged
+- Positive flow decreases gas volume
+- Positive flow with $UA=0$ raises temperature
+- Negative flow lowers temperature
+- $T_g >T_{sea}$ gives negative heat flow
+- Pump efficiency outside $0<η≤1$ is rejected
+- Zero power mismatch gives IDLE
+- Full PCS rejects further charge
+- Empty PCS rejects further discharge
+- Constant wind equal to target leaves PCS unchanged
+- Smaller timesteps converge towards same result 

@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools"]
+
+[project]
+name = "hpes_sim"
+version = "0.1.0"
+description = "A Hydro-Pneumatic Energy Storage Simulation package."
+readme = "README.md"
+requires-python = 3.14
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+    {name = "Michael Mercieca", email = "mmercieca07@gmail.com"}
+]
+keywords = ["hydro", "pneumatic", "energy", "storage", "simulation", "wind"]
+
+[project.urls]
+GitHub = "https://github.com/MichaelMercieca/Hydro-Pneumatic-Energy-Storage-HPES-Simulation"

@@ -82,7 +82,7 @@ Cnsiderations that must be understood include:
 | $p_g=\dfrac{m_gRT_g}{V_g}$ | Gas pressure from current state |
 | $\dot Q_{\rm heat}=hA(T_{\rm sea}-T_g)$ | Heat transfer between accumulator and sea |
 | $\dfrac{dT_g}{dt}=\dfrac{hA(T_{\rm sea}-T_g)+p_gQ}{m_gc_v}$ | Transient gas-temperature model |
-| $T_{g,n+1}=T_{g,n}+\dfrac{\Delta t}{m_gc_v}\left[hA(T_{\rm sea}-T_{g,n})+p_{g,n}Q_n\right]$ | Explicit-Euler temperature update |
+| $T_{g,n+1}=T_{g,n}+\dfrac{\Delta t}{m_gc_v}\left[hA(T_{\rm sea}-T_{g,n})+p_{g,n}Q_n\right]$ |  Temperature over time |
 | $p_{g,n+1}=\dfrac{m_gRT_{g,n+1}}{V_{g,n+1}}$ | Recalculate pressure after timestep |
 
 ## 2.2 Wind, Control, Capacity & Performance
@@ -124,3 +124,16 @@ Tests to be run:
 - Empty PCS rejects further discharge
 - Constant wind equal to target leaves PCS unchanged
 - Smaller timesteps converge towards same result 
+
+Software development workflow:
+(on paper)  
+
+Build Order:  
+1. pyproject.toml
+2. parameters.py & state.py
+3. pcs.py
+4. ecu.py & controller.py
+5. step()
+6. run_simulation()
+7. Wind + pandas + plots + SciPy
+8. Verification 

@@ -1,21 +1,46 @@
 """
-Defines the parameters for the simulation.
+Defines the (immutable) parameters for the HPES simulation.
 """
 
 from dataclasses import dataclass
 
+
+ATMOSPHERIC_PRESSURE_PA = 101_325.0
+
+
 @dataclass(frozen=True)
 class PCSParameters:
+    """
+    Define fixed parameters and initial conditions for the PCS model.
+
+    Pressures are represented internally as absolute pressures in pascals.
+    Air is modelled as an ideal gas with constant thermophysical properties.
+
+    Parameters
+    ----------
+    total_volume_m3 : float
+        Total internal PCS volume [m^3].
+    initial_gas_volume_m3 : float
+        Gas volume at the start of the simulation [m^3].
+    initial_absolute_pressure_pa : float
+        Initial absolute gas pressure [Pa].
+    initial_temperature_k : float
+        Initial spatially lumped gas temperature [K].
+    heat_transfer_coefficient_w_m2_k : float
+        Lumped gas-to-surroundings heat-transfer coefficient [W/(m^2 K)].
+    heat_transfer_area_m2 : float
+        Effective heat-transfer area [m^2].
+    """
     total_volume_m3: float
     initial_gas_volume_m3: float
-    initial_pressure_pa: float
+    initial_absolute_pressure_pa: float
     initial_temperature_k: float
 
     heat_transfer_coefficient_w_m2_k: float
     heat_transfer_area_m2: float
     
-    minimum_pressure_pa: float = 80e5
-    maximum_pressure_pa: float = 200e5
+    minimum_absolute_pressure_pa: float = 80e5 + ATMOSPHERIC_PRESSURE_PA
+    maximum_absolute_pressure_pa: float = 200e5 + ATMOSPHERIC_PRESSURE_PA
 
     specific_gas_constant_j_kg_k: float = 287.05
     specific_heat_cv_j_kg_k: float = 718.0
@@ -30,18 +55,18 @@ class PCSParameters:
                 "no greater than total_volume_m3."
             )
 
-        if self.minimum_pressure_pa <= 0:
+        if self.minimum_absolute_pressure_pa <= 0:
             raise ValueError("minimum_pressure_pa must be greater than 0.")
 
-        if self.maximum_pressure_pa <= self.minimum_pressure_pa:
+        if self.maximum_absolute_pressure_pa <= self.minimum_absolute_pressure_pa:
             raise ValueError(
                 "maximum_pressure_pa must be greater than minimum_pressure_pa."
             )
 
         if not (
-            self.minimum_pressure_pa
-            <= self.initial_pressure_pa
-            <= self.maximum_pressure_pa
+            self.minimum_absolute_pressure_pa
+            <= self.initial_absolute_pressure_pa
+            <= self.maximum_absolute_pressure_pa
         ):
             raise ValueError(
                 "initial_pressure_pa must lie between the minimum and maximum "
@@ -73,6 +98,7 @@ class PCSParameters:
 
 @dataclass(frozen=True)
 class EnvironmentParameters:
+    """Define constant environmental conditions for a simulation run."""
     seawater_temperature_k: float
     seawater_density_kg_m3: float = 1025.0
     gravitational_acceleration_m_s2: float = 9.80665
@@ -95,6 +121,7 @@ class EnvironmentParameters:
 
 @dataclass(frozen=True)
 class SimulationSettings:
+    """Define numerical time settings for a simulation run."""
     time_step_s: float
     duration_s: float
 

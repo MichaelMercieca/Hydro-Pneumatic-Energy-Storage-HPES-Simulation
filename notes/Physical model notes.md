@@ -1,1 +1,0 @@
-- initially assuming isothermal comp. & exp. due to sea acting as heat source/sink.

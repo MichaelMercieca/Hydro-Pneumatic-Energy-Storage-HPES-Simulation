@@ -1,34 +1,14 @@
 import pytest
 
-from hpes_sim.parameters import (
-    EnvironmentParameters, PCSParameters, SimulationSettings
-)
-
-def make_valid_pcs_parameters(**overrides):
-    """
-    Creates valid defaults for `PCSParameters`, overriding selected 
-    values via keyword arguments to reduce boilerplate during tests.
-    
-    Uses a factory design patter for creating objects. 
-    """
-    values = {
-        "total_volume_m3": 4080.0,
-        "initial_gas_volume_m3": 3000.0,
-        "initial_absolute_pressure_pa": 8.5e6,
-        "initial_temperature_k": 287.15,
-        "heat_transfer_coefficient_w_m2_k": 10.0,
-        "heat_transfer_area_m2": 500.0,
-    }
-    
-    values.update(overrides)    # Updates defaults with overriden values
-    
-    return PCSParameters(**values)  # Repacks key-value pairs into kwargs for `PCSParameters`
+# from hpes_sim.parameters import PCSParameters
+from factories import make_valid_pcs_parameters
 
 
 def test_pcs_values():
     params = make_valid_pcs_parameters()
     
     assert params.total_volume_m3 == 4080.0
+
 
 def test_pcs_parameters_reject_nonpositive_initial_gas_volume():
     with pytest.raises(ValueError):
@@ -86,13 +66,20 @@ def test_pcs_parameters_reject_nonpositive_heat_transfer_area():
 
 
 def test_pcs_parameters_accept_initial_volume_equal_to_total():
-    total_volume_default_value = make_valid_pcs_parameters().total_volume_m3
-    assert make_valid_pcs_parameters(initial_gas_volume_m3=total_volume_default_value)
+    params = make_valid_pcs_parameters(initial_gas_volume_m3=4080.0)
+
+    assert params.initial_gas_volume_m3 == params.total_volume_m3
 
 
 def test_pcs_parameters_allow_initial_absolute_pressure_boundaries():
     params = make_valid_pcs_parameters()
-    max_pressure_default = params.maximum_absolute_pressure_pa
-    min_pressure_default = params.minimum_absolute_pressure_pa
-    assert make_valid_pcs_parameters(maximum_absolute_pressure_pa=max_pressure_default, 
-                                     minimum_absolute_pressure_pa=min_pressure_default)
+
+    at_minimum = make_valid_pcs_parameters(
+        initial_absolute_pressure_pa=params.minimum_absolute_pressure_pa
+    )
+    at_maximum = make_valid_pcs_parameters(
+        initial_absolute_pressure_pa=params.maximum_absolute_pressure_pa
+    )
+
+    assert (at_minimum.initial_absolute_pressure_pa == params.minimum_absolute_pressure_pa)
+    assert (at_maximum.initial_absolute_pressure_pa == params.maximum_absolute_pressure_pa)

@@ -38,7 +38,7 @@ class PCSParameters:
 
     heat_transfer_coefficient_w_m2_k: float
     heat_transfer_area_m2: float
-    
+
     minimum_absolute_pressure_pa: float = 80e5 + ATMOSPHERIC_PRESSURE_PA
     maximum_absolute_pressure_pa: float = 200e5 + ATMOSPHERIC_PRESSURE_PA
 
@@ -96,15 +96,39 @@ class PCSParameters:
                 "heat_transfer_area_m2 must be greater than 0."
             )
 
+
+@dataclass(frozen=True)
+class ECUParameters:
+    """Define fixed efficiency parameters for the ECU model."""
+
+    pump_efficiency: float = 0.82
+    turbine_efficiency: float = 0.92
+
+    def __post_init__(self) -> None:
+        if not 0 < self.pump_efficiency <= 1:
+            raise ValueError(
+                "pump_efficiency must be greater than 0 and at most 1."
+            )
+
+        if not 0 < self.turbine_efficiency <= 1:
+            raise ValueError(
+                "turbine_efficiency must be greater than 0 and at most 1."
+            )
+
+
 @dataclass(frozen=True)
 class EnvironmentParameters:
     """Define constant environmental conditions for a simulation run."""
+    deployment_depth_m: float
     seawater_temperature_k: float
     seawater_density_kg_m3: float = 1025.0
     gravitational_acceleration_m_s2: float = 9.80665
     atmospheric_pressure_pa: float = 101_325.0
     
     def __post_init__(self) -> None:
+        if self.deployment_depth_m <= 0:
+            raise ValueError("deployment_depth_m must be greater than 0 m.")
+
         if self.seawater_temperature_k <= 0:
             raise ValueError("seawater_temperature_k must be greater than 0 K.")
 

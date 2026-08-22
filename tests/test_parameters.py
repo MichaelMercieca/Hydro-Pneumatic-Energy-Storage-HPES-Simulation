@@ -1,7 +1,7 @@
 import pytest
 
 # from hpes_sim.parameters import PCSParameters
-from factories import make_valid_pcs_parameters
+from factories import make_valid_ecu_parameters, make_valid_pcs_parameters
 
 
 def test_pcs_values():
@@ -83,3 +83,23 @@ def test_pcs_parameters_allow_initial_absolute_pressure_boundaries():
 
     assert (at_minimum.initial_absolute_pressure_pa == params.minimum_absolute_pressure_pa)
     assert (at_maximum.initial_absolute_pressure_pa == params.maximum_absolute_pressure_pa)
+
+
+@pytest.mark.parametrize(
+    "pump_efficiency",
+    [0.0, -0.1, 1.1],
+)
+def test_ecu_parameters_reject_invalid_pump_efficiency(pump_efficiency):
+    with pytest.raises(ValueError):
+        make_valid_ecu_parameters(pump_efficiency=pump_efficiency)
+
+
+@pytest.mark.parametrize(
+    "turbine_efficiency",
+    [0.0, -0.1, 1.1],
+)
+def test_ecu_parameters_reject_invalid_turbine_efficiency(
+    turbine_efficiency,
+):
+    with pytest.raises(ValueError):
+        make_valid_ecu_parameters(turbine_efficiency=turbine_efficiency)

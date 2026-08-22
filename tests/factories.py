@@ -4,7 +4,7 @@ Makes test modules more readable.
 """
 
 from hpes_sim.parameters import (
-    EnvironmentParameters, PCSParameters, SimulationSettings
+    ECUParameters, EnvironmentParameters, PCSParameters, SimulationSettings
 )
 from hpes_sim.state import HPESState
 
@@ -41,11 +41,22 @@ def make_valid_hpes_state(**overrides):
     return HPESState(**values)
 
 
+def make_valid_ecu_parameters(**overrides):
+    values = {
+        "pump_efficiency": 0.82,
+        "turbine_efficiency": 0.92,
+    }
+    values.update(overrides)
+
+    return ECUParameters(**values)
+
+
 def make_valid_environment_parameters(**overrides):
     values = {
+        "deployment_depth_m": 100.0,
         "atmospheric_pressure_pa": 101.325e3,
         "gravitational_acceleration_m_s2": 9.81,
-        "seawater_density_kg_m3": 1.025,
+        "seawater_density_kg_m3": 1025.0,
         "seawater_temperature_k": 297.15,
     }
     values.update(overrides)    

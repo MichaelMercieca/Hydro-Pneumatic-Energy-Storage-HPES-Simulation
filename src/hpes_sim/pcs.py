@@ -121,7 +121,7 @@ def advance_pcs(
         heat_transfer_rate_w=heat_transfer_rate_w,
         hydraulic_flow_rate_m3_s=hydraulic_flow_rate_m3_s,
         pressure_pa=gas_pressure_pa,
-        specific_heat_cv_j_kg_k=parameters.specific_gas_constant_j_kg_k
+        specific_heat_cv_j_kg_k=parameters.specific_heat_cv_j_kg_k
     )
     
     next_gas_volume_m3 = (

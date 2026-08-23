@@ -1,5 +1,8 @@
 """Time-marching orchestration for the HPES simulation."""
 
+from collections.abc import Sequence
+from dataclasses import dataclass
+
 from hpes_sim.parameters import (
     ECUParameters, EnvironmentParameters, PCSParameters
 )
@@ -10,6 +13,14 @@ from hpes_sim.ecu import (
     calculate_charging_flow_rate_m3_s,
     calculate_discharging_flow_rate_m3_s
 )
+
+
+@dataclass(frozen=True)
+class SimulationResult:
+    """Store the complete state history from a simulation run."""
+
+    states: tuple[HPESState, ...]
+
 
 def calculate_pressure_difference_pa(
     gas_pressure_pa: float,
@@ -103,3 +114,44 @@ def advance_simulation_step(
     )
     
     return next_state
+
+
+def run_simulation(
+    initial_state: HPESState,
+    renewable_power_series_w: Sequence[float],
+    target_power_series_w: Sequence[float],
+    gas_mass_kg: float,
+    parameters: PCSParameters,
+    ecu_parameters: ECUParameters,
+    environment: EnvironmentParameters,
+    time_step_s: float,
+) -> SimulationResult:
+    """Run the HPES model over a sequence of power inputs."""
+    if len(renewable_power_series_w) != len(target_power_series_w):
+        raise ValueError(
+            "renewable and target power series must have equal lengths."
+        )
+
+    if time_step_s <= 0:
+        raise ValueError("time_step_s must be greater than zero.")
+
+    states = [initial_state]
+    current_state = initial_state
+
+    for renewable_power_w, target_power_w in zip(
+        renewable_power_series_w,
+        target_power_series_w,
+    ):
+        current_state = advance_simulation_step(
+            state=current_state,
+            renewable_power_w=renewable_power_w,
+            target_power_w=target_power_w,
+            gas_mass_kg=gas_mass_kg,
+            parameters=parameters,
+            ecu_parameters=ecu_parameters,
+            environment=environment,
+            time_step_s=time_step_s,
+        )
+        states.append(current_state)
+
+    return SimulationResult(states=tuple(states))

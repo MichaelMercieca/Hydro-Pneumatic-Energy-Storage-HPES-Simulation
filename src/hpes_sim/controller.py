@@ -75,3 +75,4 @@ def apply_operating_constraints(
                 ecu_parameters.maximum_discharging_power_w
             )
         )
+ 

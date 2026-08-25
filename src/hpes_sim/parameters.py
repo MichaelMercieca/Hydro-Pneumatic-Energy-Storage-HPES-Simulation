@@ -15,21 +15,6 @@ class PCSParameters:
 
     Pressures are represented internally as absolute pressures in pascals.
     Air is modelled as an ideal gas with constant thermophysical properties.
-
-    Parameters
-    ----------
-    total_volume_m3 : float
-        Total internal PCS volume [m^3].
-    initial_gas_volume_m3 : float
-        Gas volume at the start of the simulation [m^3].
-    initial_absolute_pressure_pa : float
-        Initial absolute gas pressure [Pa].
-    initial_temperature_k : float
-        Initial spatially lumped gas temperature [K].
-    heat_transfer_coefficient_w_m2_k : float
-        Lumped gas-to-surroundings heat-transfer coefficient [W/(m^2 K)].
-    heat_transfer_area_m2 : float
-        Effective heat-transfer area [m^2].
     """
     total_volume_m3: float
     initial_gas_volume_m3: float
@@ -38,6 +23,9 @@ class PCSParameters:
 
     heat_transfer_coefficient_w_m2_k: float
     heat_transfer_area_m2: float
+    
+    minimum_gas_volume_m3: float
+    maximum_gas_volume_m3: float
 
     minimum_absolute_pressure_pa: float = 80e5 + ATMOSPHERIC_PRESSURE_PA
     maximum_absolute_pressure_pa: float = 200e5 + ATMOSPHERIC_PRESSURE_PA
@@ -95,6 +83,17 @@ class PCSParameters:
             raise ValueError(
                 "heat_transfer_area_m2 must be greater than 0."
             )
+            
+        if not (
+            0
+            < self.minimum_gas_volume_m3
+            < self.maximum_gas_volume_m3
+            <= self.total_volume_m3
+        ):
+            raise ValueError(
+                "gas-volume limits must satisfy "
+                "0 < minimum < maximum <= total volume."
+            )
 
 
 @dataclass(frozen=True)
@@ -103,6 +102,9 @@ class ECUParameters:
 
     pump_efficiency: float = 0.82
     turbine_efficiency: float = 0.92
+    
+    maximum_charging_power_w: float = 5.0e6
+    maximum_discharging_power_w: float = 5.0e6
 
     def __post_init__(self) -> None:
         if not 0 < self.pump_efficiency <= 1:
@@ -113,6 +115,15 @@ class ECUParameters:
         if not 0 < self.turbine_efficiency <= 1:
             raise ValueError(
                 "turbine_efficiency must be greater than 0 and at most 1."
+            )
+        if self.maximum_charging_power_w <= 0:
+            raise ValueError(
+                "maximum_charging_power_w must be greater than zero."
+            )
+
+        if self.maximum_discharging_power_w <= 0:
+            raise ValueError(
+                "maximum_discharging_power_w must be greater than zero."
             )
 
 

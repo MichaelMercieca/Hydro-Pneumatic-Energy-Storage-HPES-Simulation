@@ -23,6 +23,8 @@ def make_valid_pcs_parameters(**overrides):
         "initial_temperature_k": 287.15,
         "heat_transfer_coefficient_w_m2_k": 10.0,
         "heat_transfer_area_m2": 500.0,
+        "minimum_gas_volume_m3": 1200.0,
+        "maximum_gas_volume_m3": 3900.0,
     }
     
     values.update(overrides)    # Updates defaults with overriden values

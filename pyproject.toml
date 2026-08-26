@@ -9,7 +9,10 @@ dependencies = [
     "numpy",
     "matplotlib",
     "pandas",
-    "scipy"
+    "scipy",
+    "cdsapi",
+    "xarray",
+    "netCDF4"
 ]
 description = "A Hydro-Pneumatic Energy Storage Simulation package."
 readme = "README.md"

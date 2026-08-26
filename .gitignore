@@ -1,6 +1,11 @@
 # Personal notes I'm keeping for learning and remembering
 personal_notes/
 
+data/*
+!data/processed/.gitkeep
+!data/raw/.gitkeep
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

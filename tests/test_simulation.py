@@ -53,7 +53,7 @@ def test_pressure_difference_rejects_nonpositive_result():
 
 
 def test_idle_step_advances_only_time_at_thermal_equilibrium():
-    parameters = make_valid_pcs_parameters()
+    pcs_parameters = make_valid_pcs_parameters()
     ecu_parameters = make_valid_ecu_parameters()
     environment = make_valid_environment_parameters()
     state = make_valid_hpes_state(
@@ -64,8 +64,8 @@ def test_idle_step_advances_only_time_at_thermal_equilibrium():
         state=state,
         renewable_power_w=6.0e6,
         target_power_w=6.0e6,
-        gas_mass_kg=calculate_initial_gas_mass_kg(parameters),
-        parameters=parameters,
+        gas_mass_kg=calculate_initial_gas_mass_kg(pcs_parameters),
+        pcs_parameters=pcs_parameters,
         ecu_parameters=ecu_parameters,
         environment=environment,
         time_step_s=1.0,
@@ -79,7 +79,7 @@ def test_idle_step_advances_only_time_at_thermal_equilibrium():
 
 
 def test_surplus_power_charges_pcs():
-    parameters = make_valid_pcs_parameters()
+    pcs_parameters = make_valid_pcs_parameters()
     ecu_parameters = make_valid_ecu_parameters()
     environment = make_valid_environment_parameters()
     state = make_valid_hpes_state(
@@ -90,8 +90,8 @@ def test_surplus_power_charges_pcs():
         state=state,
         renewable_power_w=6.1e6,
         target_power_w=6.0e6,
-        gas_mass_kg=calculate_initial_gas_mass_kg(parameters),
-        parameters=parameters,
+        gas_mass_kg=calculate_initial_gas_mass_kg(pcs_parameters),
+        pcs_parameters=pcs_parameters,
         ecu_parameters=ecu_parameters,
         environment=environment,
         time_step_s=1.0,
@@ -103,7 +103,7 @@ def test_surplus_power_charges_pcs():
 
 
 def test_power_deficit_discharges_pcs():
-    parameters = make_valid_pcs_parameters()
+    pcs_parameters = make_valid_pcs_parameters()
     ecu_parameters = make_valid_ecu_parameters()
     environment = make_valid_environment_parameters()
     state = make_valid_hpes_state(
@@ -114,8 +114,8 @@ def test_power_deficit_discharges_pcs():
         state=state,
         renewable_power_w=5.9e6,
         target_power_w=6.0e6,
-        gas_mass_kg=calculate_initial_gas_mass_kg(parameters),
-        parameters=parameters,
+        gas_mass_kg=calculate_initial_gas_mass_kg(pcs_parameters),
+        pcs_parameters=pcs_parameters,
         ecu_parameters=ecu_parameters,
         environment=environment,
         time_step_s=1.0,
@@ -127,7 +127,7 @@ def test_power_deficit_discharges_pcs():
 
 
 def test_run_simulation_records_initial_and_every_later_state():
-    parameters = make_valid_pcs_parameters()
+    pcs_parameters = make_valid_pcs_parameters()
     ecu_parameters = make_valid_ecu_parameters()
     environment = make_valid_environment_parameters()
     initial_state = make_valid_hpes_state(
@@ -140,8 +140,8 @@ def test_run_simulation_records_initial_and_every_later_state():
         initial_state=initial_state,
         renewable_power_series_w=renewable_power_series_w,
         target_power_series_w=target_power_series_w,
-        gas_mass_kg=calculate_initial_gas_mass_kg(parameters),
-        parameters=parameters,
+        gas_mass_kg=calculate_initial_gas_mass_kg(pcs_parameters),
+        pcs_parameters=pcs_parameters,
         ecu_parameters=ecu_parameters,
         environment=environment,
         time_step_s=10.0,
@@ -154,15 +154,15 @@ def test_run_simulation_records_initial_and_every_later_state():
 
 
 def test_run_simulation_with_no_power_inputs_returns_initial_state_only():
-    parameters = make_valid_pcs_parameters()
+    pcs_parameters = make_valid_pcs_parameters()
     initial_state = make_valid_hpes_state()
 
     result = run_simulation(
         initial_state=initial_state,
         renewable_power_series_w=[],
         target_power_series_w=[],
-        gas_mass_kg=calculate_initial_gas_mass_kg(parameters),
-        parameters=parameters,
+        gas_mass_kg=calculate_initial_gas_mass_kg(pcs_parameters),
+        pcs_parameters=pcs_parameters,
         ecu_parameters=make_valid_ecu_parameters(),
         environment=make_valid_environment_parameters(),
         time_step_s=1.0,
@@ -172,15 +172,15 @@ def test_run_simulation_with_no_power_inputs_returns_initial_state_only():
 
 
 def test_run_simulation_rejects_power_series_of_different_lengths():
-    parameters = make_valid_pcs_parameters()
+    pcs_parameters = make_valid_pcs_parameters()
 
     with pytest.raises(ValueError, match="equal lengths"):
         run_simulation(
             initial_state=make_valid_hpes_state(),
             renewable_power_series_w=[6.0e6, 7.0e6],
             target_power_series_w=[6.0e6],
-            gas_mass_kg=calculate_initial_gas_mass_kg(parameters),
-            parameters=parameters,
+            gas_mass_kg=calculate_initial_gas_mass_kg(pcs_parameters),
+            pcs_parameters=pcs_parameters,
             ecu_parameters=make_valid_ecu_parameters(),
             environment=make_valid_environment_parameters(),
             time_step_s=1.0,
@@ -189,15 +189,15 @@ def test_run_simulation_rejects_power_series_of_different_lengths():
 
 @pytest.mark.parametrize("time_step_s", [0.0, -1.0])
 def test_run_simulation_rejects_nonpositive_time_step(time_step_s):
-    parameters = make_valid_pcs_parameters()
+    pcs_parameters = make_valid_pcs_parameters()
 
     with pytest.raises(ValueError, match="time_step_s"):
         run_simulation(
             initial_state=make_valid_hpes_state(),
             renewable_power_series_w=[],
             target_power_series_w=[],
-            gas_mass_kg=calculate_initial_gas_mass_kg(parameters),
-            parameters=parameters,
+            gas_mass_kg=calculate_initial_gas_mass_kg(pcs_parameters),
+            pcs_parameters=pcs_parameters,
             ecu_parameters=make_valid_ecu_parameters(),
             environment=make_valid_environment_parameters(),
             time_step_s=time_step_s,

@@ -37,14 +37,16 @@ def apply_operating_constraints(
     command: ControlCommand,
     state: HPESState,
     gas_pressure_pa: float,
-    parameters: PCSParameters,
+    pcs_parameters: PCSParameters,
     ecu_parameters: ECUParameters,
 ) -> ControlCommand:
     """Limit a requested command to the current operating constraints."""
     if command.mode is OperatingMode.CHARGING:
         if (
-            gas_pressure_pa >= parameters.maximum_absolute_pressure_pa
-            or state.gas_volume_m3 <= parameters.minimum_gas_volume_m3
+            gas_pressure_pa >= 
+            pcs_parameters.maximum_absolute_pressure_pa
+            or state.gas_volume_m3 <= 
+            pcs_parameters.minimum_gas_volume_m3
         ):
             return ControlCommand(
                 mode=OperatingMode.IDLE,
@@ -60,8 +62,10 @@ def apply_operating_constraints(
         )
     if command.mode is OperatingMode.DISCHARGING:
         if (
-            gas_pressure_pa <= parameters.minimum_absolute_pressure_pa
-            or state.gas_volume_m3 >= parameters.maximum_gas_volume_m3
+            gas_pressure_pa <= 
+            pcs_parameters.minimum_absolute_pressure_pa
+            or state.gas_volume_m3 >= 
+            pcs_parameters.maximum_gas_volume_m3
         ):
             return ControlCommand(
                 mode=OperatingMode.IDLE,

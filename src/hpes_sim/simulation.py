@@ -51,7 +51,7 @@ def advance_simulation_step(
     renewable_power_w: float,
     target_power_w: float,
     gas_mass_kg: float,
-    parameters: PCSParameters,
+    pcs_parameters: PCSParameters,
     ecu_parameters: ECUParameters,
     environment: EnvironmentParameters,
     time_step_s: float,
@@ -72,7 +72,7 @@ def advance_simulation_step(
         gas_volume_m3=state.gas_volume_m3,
         gas_temperature_k=state.gas_temperature_k,
         specific_gas_constant_j_kg_k=(
-            parameters.specific_gas_constant_j_kg_k
+            pcs_parameters.specific_gas_constant_j_kg_k
         ),
     )
     
@@ -90,7 +90,7 @@ def advance_simulation_step(
         command=requested_command,
         state=state,
         gas_pressure_pa=current_gas_pressure_pa,
-        parameters=parameters,
+        pcs_parameters=pcs_parameters,
         ecu_parameters=ecu_parameters,
     )
     
@@ -118,8 +118,8 @@ def advance_simulation_step(
             hydraulic_flow_rate_m3_s = 0.0
     
     next_state = advance_pcs(
-        state=state, environment=environment, parameters=parameters,
-        gas_mass_kg=gas_mass_kg, 
+        state=state, environment=environment, 
+        pcs_parameters=pcs_parameters, gas_mass_kg=gas_mass_kg, 
         hydraulic_flow_rate_m3_s=hydraulic_flow_rate_m3_s,
         time_step_s=time_step_s
     )
@@ -132,7 +132,7 @@ def run_simulation(
     renewable_power_series_w: Sequence[float],
     target_power_series_w: Sequence[float],
     gas_mass_kg: float,
-    parameters: PCSParameters,
+    pcs_parameters: PCSParameters,
     ecu_parameters: ECUParameters,
     environment: EnvironmentParameters,
     time_step_s: float,
@@ -158,7 +158,7 @@ def run_simulation(
             renewable_power_w=renewable_power_w,
             target_power_w=target_power_w,
             gas_mass_kg=gas_mass_kg,
-            parameters=parameters,
+            pcs_parameters=pcs_parameters,
             ecu_parameters=ecu_parameters,
             environment=environment,
             time_step_s=time_step_s,

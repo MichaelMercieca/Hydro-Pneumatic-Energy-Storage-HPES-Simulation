@@ -8,7 +8,10 @@ from hpes_sim.parameters import (
 )
 from hpes_sim.state import HPESState, OperatingMode
 from hpes_sim.pcs import calculate_gas_pressure_pa, advance_pcs
-from hpes_sim.controller import determine_control_command
+from hpes_sim.controller import (
+    determine_control_command,
+    apply_operating_constraints
+)
 from hpes_sim.ecu import (
     calculate_charging_flow_rate_m3_s,
     calculate_discharging_flow_rate_m3_s
@@ -78,9 +81,17 @@ def advance_simulation_step(
         gas_pressure_pa=current_gas_pressure_pa
     )
     
-    control_command = determine_control_command(
+    requested_command = determine_control_command(
         renewable_power_w=renewable_power_w,
-        target_power_w=target_power_w
+        target_power_w=target_power_w,
+    )
+
+    control_command = apply_operating_constraints(
+        command=requested_command,
+        state=state,
+        gas_pressure_pa=current_gas_pressure_pa,
+        parameters=parameters,
+        ecu_parameters=ecu_parameters,
     )
     
     match control_command.mode:

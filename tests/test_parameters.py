@@ -1,7 +1,11 @@
 import pytest
 
 # from hpes_sim.parameters import PCSParameters
-from factories import make_valid_ecu_parameters, make_valid_pcs_parameters
+from factories import (
+    make_valid_ecu_parameters,
+    make_valid_pcs_parameters,
+    make_valid_wind_turbine_parameters,
+)
 
 
 def test_pcs_values():
@@ -103,3 +107,29 @@ def test_ecu_parameters_reject_invalid_turbine_efficiency(
 ):
     with pytest.raises(ValueError):
         make_valid_ecu_parameters(turbine_efficiency=turbine_efficiency)
+
+
+@pytest.mark.parametrize("rated_power_w", [0.0, -1.0])
+def test_wind_turbine_parameters_reject_nonpositive_rated_power(
+    rated_power_w,
+):
+    with pytest.raises(ValueError):
+        make_valid_wind_turbine_parameters(rated_power_w=rated_power_w)
+
+
+@pytest.mark.parametrize("number_of_turbines", [0, -1])
+def test_wind_turbine_parameters_reject_nonpositive_turbine_count(
+    number_of_turbines,
+):
+    with pytest.raises(ValueError):
+        make_valid_wind_turbine_parameters(
+            number_of_turbines=number_of_turbines
+        )
+
+
+def test_wind_turbine_parameters_reject_misordered_speed_limits():
+    with pytest.raises(ValueError):
+        make_valid_wind_turbine_parameters(
+            cut_in_speed_m_s=12.0,
+            rated_speed_m_s=11.0,
+        )

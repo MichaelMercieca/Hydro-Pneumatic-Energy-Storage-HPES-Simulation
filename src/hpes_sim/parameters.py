@@ -128,6 +128,35 @@ class ECUParameters:
 
 
 @dataclass(frozen=True)
+class WindTurbineParameters:
+    """Define a simplified wind-turbine power curve and farm size."""
+
+    rated_power_w: float
+    cut_in_speed_m_s: float
+    rated_speed_m_s: float
+    cut_out_speed_m_s: float
+    number_of_turbines: int = 1
+
+    def __post_init__(self) -> None:
+        if self.rated_power_w <= 0:
+            raise ValueError("rated_power_w must be greater than zero.")
+
+        if self.number_of_turbines <= 0:
+            raise ValueError("number_of_turbines must be greater than zero.")
+
+        if not (
+            0
+            <= self.cut_in_speed_m_s
+            < self.rated_speed_m_s
+            < self.cut_out_speed_m_s
+        ):
+            raise ValueError(
+                "wind-speed limits must satisfy "
+                "0 <= cut-in < rated < cut-out."
+            )
+
+
+@dataclass(frozen=True)
 class EnvironmentParameters:
     """Define constant environmental conditions for a simulation run."""
     deployment_depth_m: float

@@ -4,7 +4,11 @@ Makes test modules more readable.
 """
 
 from hpes_sim.parameters import (
-    ECUParameters, EnvironmentParameters, PCSParameters, SimulationSettings
+    ECUParameters,
+    EnvironmentParameters,
+    PCSParameters,
+    SimulationSettings,
+    WindTurbineParameters,
 )
 from hpes_sim.state import HPESState
 
@@ -51,6 +55,19 @@ def make_valid_ecu_parameters(**overrides):
     values.update(overrides)
 
     return ECUParameters(**values)
+
+
+def make_valid_wind_turbine_parameters(**overrides):
+    values = {
+        "rated_power_w": 15.0e6,
+        "cut_in_speed_m_s": 3.0,
+        "rated_speed_m_s": 11.0,
+        "cut_out_speed_m_s": 25.0,
+        "number_of_turbines": 10,
+    }
+    values.update(overrides)
+
+    return WindTurbineParameters(**values)
 
 
 def make_valid_environment_parameters(**overrides):

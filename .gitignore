@@ -5,6 +5,9 @@ data/*
 !data/processed/.gitkeep
 !data/raw/.gitkeep
 
+# Generated simulation figures
+outputs/
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

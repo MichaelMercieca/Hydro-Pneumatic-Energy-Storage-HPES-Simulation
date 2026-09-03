@@ -15,7 +15,7 @@ REQUEST = {
         "longitude": 14.75,
         "latitude": 35.75,
     },
-    "date": ["2026-01-01/2026-01-07"],
+    "date": ["2026-04-09/2026-05-09"],
     "data_format": "netcdf",
 }
 

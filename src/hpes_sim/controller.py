@@ -1,5 +1,6 @@
 """Control logic for HPES operation."""
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 from hpes_sim.state import OperatingMode, HPESState
@@ -33,21 +34,33 @@ def determine_control_command(
     )
 
 
+def calculate_trailing_average_target_power_w(
+    renewable_power_series_w: Sequence[float],
+    window_steps: int,
+) -> tuple[float, ...]:
+    """Calculate a causal trailing-average smoothing target."""
+    if window_steps <= 0:
+        raise ValueError("window_steps must be greater than zero.")
+
+    target_power_series_w = []
+
+    for index in range(len(renewable_power_series_w)):
+        window_start = max(0, index - window_steps + 1)
+        window = renewable_power_series_w[window_start:index + 1]
+        target_power_series_w.append(sum(window) / len(window))
+
+    return tuple(target_power_series_w)
+
+
 def apply_operating_constraints(
     command: ControlCommand,
     state: HPESState,
-    gas_pressure_pa: float,
     pcs_parameters: PCSParameters,
     ecu_parameters: ECUParameters,
 ) -> ControlCommand:
-    """Limit a requested command to the current operating constraints."""
+    """Apply instantaneous equipment ratings and hard volume stops."""
     if command.mode is OperatingMode.CHARGING:
-        if (
-            gas_pressure_pa >= 
-            pcs_parameters.maximum_absolute_pressure_pa
-            or state.gas_volume_m3 <= 
-            pcs_parameters.minimum_gas_volume_m3
-        ):
+        if state.gas_volume_m3 <= pcs_parameters.minimum_gas_volume_m3:
             return ControlCommand(
                 mode=OperatingMode.IDLE,
                 electrical_power_w=0.0,
@@ -61,12 +74,7 @@ def apply_operating_constraints(
             ),
         )
     if command.mode is OperatingMode.DISCHARGING:
-        if (
-            gas_pressure_pa <= 
-            pcs_parameters.minimum_absolute_pressure_pa
-            or state.gas_volume_m3 >= 
-            pcs_parameters.maximum_gas_volume_m3
-        ):
+        if state.gas_volume_m3 >= pcs_parameters.maximum_gas_volume_m3:
             return ControlCommand(
                 mode=OperatingMode.IDLE,
                 electrical_power_w=0.0,
@@ -77,9 +85,7 @@ def apply_operating_constraints(
             electrical_power_w=min(
                 command.electrical_power_w,
                 ecu_parameters.maximum_discharging_power_w
-            )
+            ),
         )
-    
-    # if idle
+
     return command
- 

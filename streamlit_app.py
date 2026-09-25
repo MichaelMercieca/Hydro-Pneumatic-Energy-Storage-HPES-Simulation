@@ -58,8 +58,8 @@ def credit_chart(figure):
     return figure
 
 
-st.title("Closed Hydro-Pneumatic Energy Storage Simulation")
-st.caption("Wind-power smoothing at a reference site near Malta · 35.75° N, 14.75° E · ERA5 100 m wind, 2025")
+st.title("Closed Hydro-Pneumatic Energy Storage (C-HPES) Simulation")
+st.caption("Wind-power smoothing using a C-HPES model at a reference site near Malta (35.75° N, 14.75° E). Wind data: ERA5 100 m wind over the year 2025")
 
 st.subheader("Simulation settings")
 with st.form("study"):
@@ -80,7 +80,7 @@ with st.form("study"):
 
 with st.expander("Model assumptions"):
     st.markdown((ROOT / "docs" / "model_assumptions.md").read_text(encoding="utf-8"))
-with st.expander("System logic & governing equations"):
+with st.expander("System logic & main equations used"):
     st.markdown((ROOT / "docs" / "system_logic.md").read_text(encoding="utf-8"))
 
 if submitted:
@@ -97,15 +97,14 @@ if "result" not in st.session_state:
     st.info("Select Run simulation to calculate results for the selected period and settings.")
 else:
     frame, metrics, metadata = st.session_state.result
-    st.subheader("Study results")
+    st.subheader("Results")
     st.caption(f"Completed run: {metadata['start']} through {metadata['end']} UTC · {metadata['source']} · "
                f"{metadata['design']['volume_m3']:,.0f} m³ · {metadata['design']['depth_m']:g} m depth · "
                f"{metadata['design']['power_mw']:g} MW storage · {metadata['design']['wind_rating_mw']:g} MW wind · "
                f"{metadata['design']['smoothing_hours']} h target. Controls take effect only after Run simulation.")
-    st.caption("RMSE is the root-mean-square deviation from the trailing-average target over the selected period; lower is better.")
     a, b, c = st.columns(3)
     reduction = metrics["rmse_reduction_percent"]
-    a.metric("RMSE reduction", "N/A" if reduction is None else f"{reduction:.1f}%", help="Relative reduction in root-mean-square target error. N/A if the raw error is zero.")
+    a.metric("RMSE reduction", "N/A" if reduction is None else f"{reduction:.1f}%")
     b.metric("RMSE without HPES", f"{metrics['raw_rmse_mw']:.3f} MW")
     c.metric("RMSE with HPES", f"{metrics['grid_rmse_mw']:.3f} MW")
     average_discharge = metrics.get("average_discharge_power_mw", metrics["discharged_mwh"] / (len(frame) * metadata["time_step_s"] / 3600))
@@ -131,19 +130,35 @@ else:
         st.plotly_chart(credit_chart(fig), width="stretch")
         st.caption("Shaded area compares absolute target error before and after storage. The target is a causal trailing average of hourly wind power.")
     with operation:
-        st.plotly_chart(line_chart(chart_frame, ["storage_mw"], ["Storage"], "Storage power: positive = charging", "MW", [0]), width="stretch")
-        left, right = st.columns(2)
+        st.plotly_chart(line_chart(chart_frame, ["storage_mw"], ["Storage"], "Storage power (+ = charging, - = discharging)", "MW", [0]), width="stretch")
+        # left, right = st.columns(2)
         scale = metadata["design"]["volume_m3"] / 4080
-        with left:
-            st.plotly_chart(line_chart(chart_frame, ["gas_pressure_bar_abs"], ["Pressure"], "Gas pressure", "bar absolute", [81.01325, 201.01325]), width="stretch")
-        with right:
-            st.plotly_chart(line_chart(chart_frame, ["gas_volume_m3"], ["Gas volume"], "Gas volume", "m³", [1200 * scale, 3900 * scale]), width="stretch")
+        # with left:
+        st.plotly_chart(line_chart(chart_frame, ["gas_pressure_bar_abs"], ["Pressure"], "Gas pressure", "bar absolute", [81.01325, 201.01325]), width="stretch")
+        # with right:
+        st.plotly_chart(line_chart(chart_frame, ["gas_volume_m3"], ["Gas volume"], "Gas volume", "m³", [1200 * scale, 3900 * scale]), width="stretch")
         st.plotly_chart(line_chart(chart_frame, ["gas_temperature_c"], ["Temperature"], "Gas temperature", "°C", [14]), width="stretch")
         st.caption("Dashed lines show operating limits or the 14°C seawater reference. State values are recorded at the end of each 60-second interval.")
     with downloads:
         st.write(f"Average discharge power: **{average_discharge:.3f} MW** over the full selected period, including idle and charging hours.")
-        st.write(f"Electrical energy absorbed: **{metrics['charged_mwh']:.2f} MWh**. Remaining export above target: "
-                 f"**{metrics['surplus_mwh']:.2f} MWh**. Energy shortfall relative to target: **{metrics['shortfall_mwh']:.2f} MWh**.")
+        interval_hours = metadata["time_step_s"] / 3600
+        wind_energy = float(frame.wind_mw.sum() * interval_hours)
+        target_energy = float(frame.target_mw.sum() * interval_hours)
+
+        def energy_share(value, total, basis):
+            return f"{100 * value / total:.1f}% of {basis}" if total > 1e-12 else f"N/A — no {basis}"
+
+        st.caption(f"Selected period: {wind_energy:.2f} MWh of wind generation; {target_energy:.2f} MWh of target delivery.")
+        st.table(pd.DataFrame({
+            "Energy measure": ["Charging energy", "Surplus energy", "Energy shortfall"],
+            "Amount": [f"{metrics[key]:.2f} MWh" for key in ("charged_mwh", "surplus_mwh", "shortfall_mwh")],
+            "Share of period total": [
+                energy_share(metrics["charged_mwh"], wind_energy, "wind generation"),
+                energy_share(metrics["surplus_mwh"], target_energy, "target delivery"),
+                energy_share(metrics["shortfall_mwh"], target_energy, "target delivery"),
+            ],
+        }).set_index("Energy measure"))
+        st.caption("Surplus and shortfall are measured relative to the smoothing target.")
         if st.button("Prepare time-series download"):
             from io import BytesIO
             with st.spinner("Preparing download…"):

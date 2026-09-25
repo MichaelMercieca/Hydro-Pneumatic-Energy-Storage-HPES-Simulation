@@ -1,4 +1,6 @@
-# Closed Hydro-Pneumatic Energy Storage Simulation
+# Try out the simulation online: https://closed-hpes-simulation.streamlit.app/
+
+## Closed Hydro-Pneumatic Energy Storage Simulation
 
 A Python model of closed-cycle hydro-pneumatic storage for wind-power smoothing, with a Streamlit web interface. Wind input is ERA5 data for 2025 at 35.75° N, 14.75° E, near Malta.
 

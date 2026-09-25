@@ -1,0 +1,19 @@
+{
+  "dataset": "reanalysis-era5-single-levels-timeseries",
+  "doi": "https://doi.org/10.24381/1cf1ad76",
+  "latitude": 35.75,
+  "longitude": 14.75,
+  "variables": {
+    "u100": "m/s",
+    "v100": "m/s"
+  },
+  "time_zone": "UTC",
+  "start": "2025-01-01T00:00:00Z",
+  "end": "2025-12-31T23:00:00Z",
+  "records": 8760,
+  "retrieved_utc": "2026-09-25T12:08:52.847498+00:00",
+  "sha256": "998b9e56495b88e02c811de1fb3672c19bcc21a2c41019ed8adb6cb105fa003b",
+  "source": "ECMWF, Copernicus Climate Change Service Climate Data Store",
+  "license": "https://creativecommons.org/licenses/by/4.0/",
+  "modification": "NetCDF converted to CSV; hourly 100 m wind components unchanged."
+}

@@ -1,0 +1,4 @@
+-e .
+streamlit==1.55.0
+plotly==6.9.0
+ecmwf-datastores-client==0.5.3
